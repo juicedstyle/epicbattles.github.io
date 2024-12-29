@@ -1,0 +1,14 @@
+ Volume in drive C has no label.
+ Volume Serial Number is DEFC-B2A1
+
+ Directory of C:\Users\Root\Desktop\game\scripts
+
+12/29/2024  12:58 PM    <DIR>          .
+12/29/2024  12:58 PM    <DIR>          ..
+12/27/2024  06:48 PM             2,683 attack.js
+12/27/2024  10:30 PM             1,710 index.js
+12/29/2024  12:58 PM                 0 scripts.txt
+12/29/2024  12:33 PM             2,653 server.js
+12/29/2024  11:54 AM               514 users.json
+               5 File(s)          7,560 bytes
+               2 Dir(s)  169,396,051,968 bytes free

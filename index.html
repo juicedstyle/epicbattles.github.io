@@ -1,0 +1,206 @@
+/Desktop/game/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epic Battle Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 2rem;
+        }
+
+        .rankings-section {
+            background: rgba(50, 50, 50, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 0 30px rgba(0, 150, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .chat-section {
+            position: sticky;
+            top: 20px;
+            height: 600px; /* Reduced height */
+            background: rgba(50, 50, 50, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .rankings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: #fff;
+        }
+
+        .rankings-table th, 
+        .rankings-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .rankings-table th {
+            background: linear-gradient(145deg, #404040, #333333);
+            color: #00aaff;
+        }
+
+        .rankings-table tr:hover {
+            background: rgba(0, 150, 255, 0.1);
+        }
+
+        .player-link, .guild-link {
+            color: #00aaff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .player-link:hover, .guild-link:hover {
+            color: #66ccff;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #00aaff;
+        }
+
+        .score {
+            font-weight: bold;
+            color: #66ccff;
+        }
+
+        .chat-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Epic Battle Game</h1>
+        <nav>
+            <ul id="nav-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="attack.html">Attack</a></li>
+                <li><a href="guild.html">Guild</a></li>
+                <li><a href="statistics.html">Statistics</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="rankings-wrapper">
+            <section class="rankings-section">
+                <h2>Top Players</h2>
+                <table class="rankings-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Race</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top-players-body"></tbody>
+                </table>
+            </section>
+
+            <section class="rankings-section">
+                <h2>Top Guilds</h2>
+                <table class="rankings-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Guild</th>
+                            <th>Members</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top-guilds-body"></tbody>
+                </table>
+            </section>
+        </div>
+
+        <section class="chat-section">
+            <iframe src="chat.html" class="chat-iframe" title="Game Chat"></iframe>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            const navList = document.getElementById('nav-list');
+
+            // Navigation menu update
+            if (loggedInUser) {
+                const userButton = document.createElement('li');
+                userButton.innerHTML = `<button>${loggedInUser.username}</button>`;
+                navList.insertBefore(userButton, navList.firstChild);
+
+                const logoutButton = document.createElement('li');
+                logoutButton.innerHTML = `<button id="logout-button">Sign Out</button>`;
+                navList.appendChild(logoutButton);
+
+                document.getElementById('logout-button').addEventListener('click', () => {
+                    localStorage.removeItem('loggedInUser');
+                    window.location.reload();
+                });
+            }
+
+            // Rankings update function
+            function updateRankings() {
+                fetch('/api/statistics')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update Players Table
+                        const topPlayersBody = document.getElementById("top-players-body");
+                        topPlayersBody.innerHTML = '';
+                        data.topPlayers.forEach((player, index) => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td class="rank">#${index + 1}</td>
+                                <td><a href="profile.html?username=${encodeURIComponent(player.username)}" 
+                                   class="player-link">${player.username}</a></td>
+                                <td>${player.race}</td>
+                                <td class="score">${player.score || 0}</td>
+                            `;
+                            topPlayersBody.appendChild(row);
+                        });
+
+                        // Update Guilds Table
+                        const topGuildsBody = document.getElementById("top-guilds-body");
+                        topGuildsBody.innerHTML = '';
+                        data.guilds.forEach((guild, index) => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td class="rank">#${index + 1}</td>
+                                <td><a href="guild.html?name=${encodeURIComponent(guild.name)}" 
+                                   class="guild-link">${guild.name}</a></td>
+                                <td>${guild.memberCount}</td>
+                                <td class="score">${guild.score || 0}</td>
+                            `;
+                            topGuildsBody.appendChild(row);
+                        });
+                    })
+                    .catch(error => console.error('Error loading rankings:', error));
+            }
+
+            // Initial load
+            updateRankings();
+
+            // Update every 30 seconds
+            setInterval(updateRankings, 30000);
+        });
+    </script>
+</body>
+</html>

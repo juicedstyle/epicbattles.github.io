@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guild - Epic Battle Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Guild</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="attack.html">Attack</a></li>
+                <li><a href="guild.html">Guild</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="statistics.html">Statistics</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="guild-profile-content">
+            <!-- Guild profile content will be dynamically populated here -->
+        </div>
+
+        <div id="guild-actions">
+            <h2>Create or Join a Guild</h2>
+            <form id="guild-form">
+                <label for="guild-name">Guild Name:</label>
+                <input type="text" id="guild-name" name="guild-name" required>
+                
+                <button type="submit">Create Guild</button>
+            </form>
+        </div>
+
+        <div id="existing-guilds">
+            <h2>Existing Guilds</h2>
+            <ul id="guild-list">
+                <!-- Existing guilds will be dynamically populated here -->
+            </ul>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Epic Battle Game. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            const guilds = JSON.parse(localStorage.getItem('guilds')) || [];
+
+            // Display existing guilds
+            const guildList = document.getElementById('guild-list');
+            guilds.forEach(guild => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <strong>${guild.name}</strong> - Score: ${guild.score}
+                    <button onclick="applyToGuild('${guild.name}')">Apply to Join</button>
+                `;
+                guildList.appendChild(listItem);
+            });
+
+            // Handle guild creation
+            document.getElementById('guild-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const guildName = document.getElementById('guild-name').value;
+
+                // Check if the guild already exists
+                if (guilds.some(g => g.name === guildName)) {
+                    alert('Guild already exists');
+                    return;
+                }
+
+                // Create new guild with initialized score
+                const newGuild = { name: guildName, score: 0, creator: loggedInUser.username, members: [loggedInUser.username], pendingApplications: [] };
+                guilds.push(newGuild);
+                localStorage.setItem('guilds', JSON.stringify(guilds));
+                alert('Guild created successfully');
+                window.location.reload();
+            });
+        });
+
+        function applyToGuild(guildName) {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            const guilds = JSON.parse(localStorage.getItem('guilds')) || [];
+            const guild = guilds.find(g => g.name === guildName);
+
+            if (guild) {
+                if (guild.pendingApplications.includes(loggedInUser.username)) {
+                    alert('You have already applied to this guild');
+                    return;
+                }
+
+                guild.pendingApplications.push(loggedInUser.username);
+                localStorage.setItem('guilds', JSON.stringify(guilds));
+                alert('Application sent to guild');
+            } else {
+                alert('Guild not found');
+            }
+        }
+    </script>
+</body>
+</html>

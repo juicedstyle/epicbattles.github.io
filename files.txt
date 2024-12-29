@@ -1,0 +1,24 @@
+ Volume in drive C has no label.
+ Volume Serial Number is DEFC-B2A1
+
+ Directory of C:\Users\Root\Desktop\game
+
+12/29/2024  12:56 PM    <DIR>          .
+12/29/2024  12:56 PM    <DIR>          ..
+12/27/2024  08:36 PM             7,803 attack.html
+12/27/2024  03:52 PM               569 chat.html
+12/29/2024  12:56 PM                 0 files.txt
+12/27/2024  07:28 PM             4,183 guild.html
+12/27/2024  06:26 PM             2,359 guild_profile.html
+12/27/2024  07:43 PM             5,692 index.html
+12/29/2024  12:10 PM             4,777 login.html
+12/27/2024  03:51 PM             1,588 onboarding.html
+12/27/2024  06:03 PM             2,208 player_profile.html
+12/27/2024  06:33 PM             1,709 profile.html
+12/29/2024  12:20 PM    <DIR>          public
+12/27/2024  08:56 PM             6,097 register.html
+12/28/2024  06:57 PM    <DIR>          scripts
+12/27/2024  07:43 PM             4,298 statistics.html
+12/27/2024  05:45 PM             1,791 styles.css
+              13 File(s)         43,074 bytes
+               4 Dir(s)  169,396,260,864 bytes free

@@ -1,0 +1,171 @@
+/statistics.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - Epic Battle Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            color: #fff;
+            border: 1px solid #333;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-card h3 {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .race-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .progress-bar {
+            background: #333;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90e2, #67b26f);
+            transition: width 0.3s ease;
+        }
+
+        .top-players-list, .guilds-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .top-players-list li, .guilds-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-score, .guild-score {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .race-Human { color: #4a90e2; }
+        .race-Elf { color: #67b26f; }
+        .race-Orc { color: #de6262; }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Game Statistics</h1>
+        <nav>
+            <ul id="nav-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="attack.html">Attack</a></li>
+                <li><a href="guild.html">Guild</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="statistics.html">Statistics</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="stats-grid">
+            <div class="stats-card">
+                <h3>Race Distribution</h3>
+                <div id="race-distribution"></div>
+            </div>
+            <div class="stats-card">
+                <h3>Top Players</h3>
+                <div id="top-players"></div>
+            </div>
+            <div class="stats-card">
+                <h3>Active Guilds</h3>
+                <div id="guilds-list"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        fetch('/api/statistics')
+            .then(response => response.json())
+            .then(stats => {
+                const raceDiv = document.getElementById('race-distribution');
+                raceDiv.innerHTML = Object.entries(stats.raceDistribution)
+                    .map(([race, count]) => `
+                        <div class="race-stat">
+                            <span class="race-${race}">${race}</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(count/stats.totalUsers*100)||0}%"></div>
+                            </div>
+                            <span class="count">${count} players</span>
+                        </div>
+                    `).join('');
+
+                const playersDiv = document.getElementById('top-players');
+                playersDiv.innerHTML = `
+                    <ul class="top-players-list">
+                        ${stats.topPlayers.map((player, index) => `
+                            <li>
+                                <span>#${index + 1} ${player.username}</span>
+                                <span class="race-${player.race}">${player.race}</span>
+                                <span class="player-score">${player.score}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+
+                const guildsDiv = document.getElementById('guilds-list');
+                guildsDiv.innerHTML = `
+                    <ul class="guilds-list">
+                        ${stats.guilds.map(guild => `
+                            <li>
+                                <span>${guild.name}</span>
+                                <span>${guild.memberCount} members</span>
+                                <span class="guild-score">${guild.score}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>

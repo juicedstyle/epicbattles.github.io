@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guild Profile - Epic Battle Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Guild Profile</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="attack.html">Attack</a></li>
+                <li><a href="guild.html">Guild</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="statistics.html">Statistics</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="guild-profile-content">
+            <!-- Guild profile content will be dynamically populated here -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Epic Battle Game. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guildName = urlParams.get('name');
+            console.log('Guild name from URL:', guildName);
+
+            if (guildName) {
+                // Retrieve guilds from local storage
+                const guilds = JSON.parse(localStorage.getItem('guilds')) || [];
+                console.log('Guilds from local storage:', guilds);
+                const guild = guilds.find(g => g.name === guildName);
+                console.log('Found guild:', guild);
+
+                if (guild) {
+                    document.getElementById('guild-profile-content').innerHTML = `
+                        <h2>${guild.name} Guild</h2>
+                        <p>Score: ${guild.score}</p>
+                        <!-- Add more guild details here -->
+                    `;
+                } else {
+                    document.getElementById('guild-profile-content').innerHTML = `<p>Guild not found.</p>`;
+                }
+            } else {
+                document.getElementById('guild-profile-content').innerHTML = `<p>No guild specified.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

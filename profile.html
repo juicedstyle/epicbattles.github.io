@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Epic Battle Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Profile</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="attack.html">Attack</a></li>
+                <li><a href="guild.html">Guild</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="statistics.html">Statistics</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="profile-content">
+            <!-- Profile content will be dynamically populated here -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Epic Battle Game. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+
+            if (loggedInUser) {
+                document.getElementById('profile-content').innerHTML = `
+                    <h2>${loggedInUser.username}'s Profile</h2>
+                    <p>Score: ${loggedInUser.score}</p>
+                    <!-- Add more player details here -->
+                `;
+            } else {
+                document.getElementById('profile-content').innerHTML = `<p>No user is logged in.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

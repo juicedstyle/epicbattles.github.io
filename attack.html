@@ -1,0 +1,328 @@
+/attack.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Arena - Epic Battle Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .battle-arena {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 2rem;
+            background: rgba(0,0,0,0.8);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255,0,0,0.1);
+        }
+
+        .battle-grid {
+            display: grid;
+            grid-template-columns: 1fr 100px 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .player-card {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: #fff;
+            text-align: center;
+            border: 1px solid #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .player-card.attacking {
+            animation: attack 0.5s ease-in-out;
+        }
+
+        @keyframes attack {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(0); }
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff0000);
+            transition: width 0.3s ease;
+        }
+
+        .vs-badge {
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(255,0,0,0.3);
+        }
+
+        .battle-log {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            color: white;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+
+        .attack-button {
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .attack-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,0,0,0.3);
+        }
+
+        .attack-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        #target-select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #333;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        .log-entry {
+            padding: 5px;
+            border-left: 3px solid #ff4444;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Battle Arena</h1>
+        <nav>
+            <ul id="nav-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="attack.html">Attack</a></li>
+                <li><a href="guild.html">Guild</a></li>
+                <li><a href="statistics.html">Statistics</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="battle-arena">
+        <div class="battle-grid">
+            <div class="player-card" id="attacker">
+                <h2 id="player-name">Loading...</h2>
+                <div class="health-bar">
+                    <div class="health-fill" id="attacker-health"></div>
+                </div>
+                <p>Health: <span id="attacker-health-text">100</span></p>
+                <p>Damage: <span id="attacker-damage">10</span></p>
+            </div>
+            
+            <div class="vs-badge">VS</div>
+
+            <div class="player-card" id="target">
+                <h2>Select Target</h2>
+                <select id="target-select">
+                    <option value="">Choose opponent</option>
+                </select>
+                <div class="health-bar">
+                    <div class="health-fill" id="target-health"></div>
+                </div>
+                <p>Health: <span id="target-health-text">100</span></p>
+                <button class="attack-button" id="attack-button">Start Battle</button>
+            </div>
+        </div>
+        <div class="battle-log" id="battle-log"></div>
+    </main>
+
+    <script>
+        let battleInProgress = false;
+        let targetCurrentHealth = 100;
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        
+        if (!loggedInUser) {
+            window.location.href = 'login.html';
+        }
+
+        function getMaxHealth(race) {
+            switch(race) {
+                case 'Elf': return 120;
+                case 'Orc': return 80;
+                default: return 100;
+            }
+        }
+
+        // Initialize player stats
+        document.getElementById('player-name').textContent = loggedInUser.username;
+        document.getElementById('attacker-health-text').textContent = loggedInUser.health;
+        document.getElementById('attacker-damage').textContent = loggedInUser.damage;
+        document.getElementById('attacker-health').style.width = 
+            `${(loggedInUser.health / getMaxHealth(loggedInUser.race)) * 100}%`;
+
+        // Load opponents
+        fetch('/api/statistics')
+            .then(response => response.json())
+            .then(data => {
+                const targetSelect = document.getElementById('target-select');
+                const opponents = data.topPlayers.filter(p => p.username !== loggedInUser.username);
+                opponents.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = player.username;
+                    option.textContent = `${player.username} (${player.race})`;
+                    targetSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading targets:', error);
+                addBattleLog('Failed to load opponents. Please refresh.');
+            });
+
+        async function doBattle() {
+            if (battleInProgress) return;
+            
+            const targetId = document.getElementById('target-select').value;
+            if (!targetId) {
+                alert('Please select a target');
+                return;
+            }
+
+            battleInProgress = true;
+            const attackButton = document.getElementById('attack-button');
+            attackButton.disabled = true;
+
+            // Initialize target health at start of battle
+            targetCurrentHealth = 100;
+            document.getElementById('target-health').style.width = '100%';
+            document.getElementById('target-health-text').textContent = targetCurrentHealth;
+
+            let currentRound = 1;
+            let battleOngoing = true;
+
+            while (battleOngoing) {
+                try {
+                    addBattleLog(`Round ${currentRound}`);
+                    
+                    // Player attack
+                    const attackerCard = document.getElementById('attacker');
+                    attackerCard.classList.add('attacking');
+                    
+                    const response = await fetch('/api/attack', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            attackerId: loggedInUser.username,
+                            targetId: targetId
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    // Update target health without resetting
+                    targetCurrentHealth -= result.damage;
+                    document.getElementById('target-health-text').textContent = targetCurrentHealth;
+                    document.getElementById('target-health').style.width = 
+                        `${Math.max(0, targetCurrentHealth)}%`;
+                    
+                    addBattleLog(`You dealt ${result.damage} damage!`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attackerCard.classList.remove('attacking');
+
+                    // Check for victory
+                    if (targetCurrentHealth <= 0) {
+                        addBattleLog('Victory! You won the battle!');
+                        loggedInUser.score += 10;
+                        battleOngoing = false;
+                        break;
+                    }
+
+                    // Enemy counter-attack
+                    const targetCard = document.getElementById('target');
+                    targetCard.classList.add('attacking');
+                    
+                    const counterDamage = Math.floor(Math.random() * 10 + 5);
+                    loggedInUser.health -= counterDamage;
+                    
+                    document.getElementById('attacker-health-text').textContent = loggedInUser.health;
+                    document.getElementById('attacker-health').style.width = 
+                        `${(loggedInUser.health / getMaxHealth(loggedInUser.race)) * 100}%`;
+                    
+                    addBattleLog(`${targetId} counter-attacks for ${counterDamage} damage!`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    targetCard.classList.remove('attacking');
+
+                    // Check for defeat
+                    if (loggedInUser.health <= 0) {
+                        addBattleLog('Defeat! You lost the battle!');
+                        battleOngoing = false;
+                        break;
+                    }
+
+                    currentRound++;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                } catch (error) {
+                    console.error('Battle error:', error);
+                    addBattleLog('Battle error occurred!');
+                    battleOngoing = false;
+                    break;
+                }
+            }
+
+            // Only reset health after battle is completely over
+            loggedInUser.health = getMaxHealth(loggedInUser.race);
+            document.getElementById('attacker-health-text').textContent = loggedInUser.health;
+            document.getElementById('attacker-health').style.width = '100%';
+
+            battleInProgress = false;
+            attackButton.disabled = false;
+            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+        }
+
+        document.getElementById('attack-button').addEventListener('click', doBattle);
+
+        function addBattleLog(message) {
+            const log = document.getElementById('battle-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+    </script>
+</body>
+</html>
