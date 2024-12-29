@@ -102,7 +102,10 @@
         <p>&copy; 2025 Epic Battle Game. All rights reserved.</p>
     </footer>
 
-    <script>
+    <script src="users.js" type="module"></script>
+    <script type="module">
+        import { registerUser } from './users.js';
+
         const raceDescriptions = {
             Human: "Humans are balanced with equal offense and defense.",
             Elf: "Elves have higher defense but lower offense.",
@@ -123,14 +126,7 @@
 
             console.log('Submitting registration:', { username, password, race });
 
-            fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password, race })
-            })
-            .then(response => response.json())
+            registerUser({ username, password, race })
             .then(data => {
                 console.log('Registration response:', data);
                 if (data.message === 'Registration successful') {
